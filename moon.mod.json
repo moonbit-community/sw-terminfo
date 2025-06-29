@@ -1,0 +1,17 @@
+{
+  "name": "ShellWen/sw_terminfo",
+  "version": "0.1.0",
+  "deps": {
+    "tonyfettes/encoding": "0.3.3"
+  },
+  "readme": "README.md",
+  "repository": "https://github.com/ShellWen/sw_terminfo",
+  "license": "Apache-2.0",
+  "keywords": [
+    "terminfo",
+    "terminal",
+    "cli"
+  ],
+  "description": "A comprehensive terminfo parsing and manipulation library for MoonBit",
+  "source": "src"
+}

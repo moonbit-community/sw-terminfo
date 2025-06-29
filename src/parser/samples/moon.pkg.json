@@ -1,0 +1,9 @@
+{
+  "pre-build": [
+    {
+      "input": "xterm-256color",
+      "output": "xterm-256color.gen.mbt",
+      "command": ":embed -i $input -o $output --binary --name xterm256color"
+    }
+  ]
+}

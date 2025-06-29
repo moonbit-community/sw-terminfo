@@ -1,0 +1,7 @@
+{
+  "is-main": false,
+  "test-import": [],
+  "deps": [
+    "ShellWen/sw_terminfo/parser"
+  ]
+}
