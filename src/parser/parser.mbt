@@ -107,7 +107,7 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
     // read string values
     {
       // ignore the rest of the string values
-      let std_str_length = @math.minimum(str_length.to_int(), all_string_abilities.length())
+      let std_str_length = @cmp.minimum(str_length.to_int(), all_string_abilities.length())
       let str_offsets: Array[Int] = Array::new(capacity=std_str_length)
       for i in 0..<std_str_length {
         str_offsets.push(reader.read_int16_le().to_int())

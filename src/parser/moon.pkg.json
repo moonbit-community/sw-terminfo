@@ -1,8 +1,9 @@
 {
   "is-main": false,
-  "test-import": [],
-  "import": [
-    "tonyfettes/encoding",
+  "test-import": [
     "ShellWen/sw_terminfo/parser/samples"
+  ],
+  "import": [
+    "tonyfettes/encoding"
   ]
 }

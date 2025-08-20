@@ -45,7 +45,7 @@ pub enum BooleanAbility {
   HasHardwareTabs
   ReturnDoesClrEol
   // Tip: edit this enum need to update all_boolean_abilities array too
-} derive(Eq, Show, ToJson)
+} derive(Eq, Show, ToJson(style="flat"))
 
 ///|
 pub let all_boolean_abilities : @immut/array.T[BooleanAbility] = @immut/array.from_array([
@@ -138,7 +138,7 @@ pub enum NumericAbility {
   HorizontalTabDelay(Int)
   NumberOfFunctionKeys(Int)
   // Tip: edit this enum need to update all_numeric_abilities array too
-} derive(Eq, Show, ToJson)
+} derive(Eq, Show, ToJson(style="flat"))
 
 ///|
 pub let all_numeric_abilities : @immut/array.T[(Int) -> NumericAbility] = @immut/array.from_array([
@@ -601,7 +601,7 @@ pub enum StringAbility {
   MemoryUnlock(String)
   BoxChars1(String)
   // Tip: edit this enum need to update all_string_abilities array too
-} derive(Eq, Show, ToJson)
+} derive(Eq, Show, ToJson(style="flat"))
 
 ///|
 pub let all_string_abilities : @immut/array.T[(String) -> StringAbility] = @immut/array.from_array([
