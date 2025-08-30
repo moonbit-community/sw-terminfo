@@ -17,10 +17,9 @@ pub struct Terminal {
   bool_values : Array[BooleanAbility]
   num_values : Array[NumericAbility]
   str_values : Array[StringAbility]
-  ext_bool_values : Array[Bool]
-  ext_num_values : Array[Int]
-  ext_str_values : Array[String]
-  ext_names : Array[String]
+  ext_bool_values : Map[String, Bool]
+  ext_num_values : Map[String, Int]
+  ext_str_values : Map[String, String]
 } derive(Eq, Show, ToJson)
 
 ///|
@@ -34,10 +33,9 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
   let bool_values : Array[BooleanAbility] = []
   let num_values : Array[NumericAbility] = []
   let str_values : Array[StringAbility] = []
-  let ext_bool_values : Array[Bool] = []
-  let ext_num_values : Array[Int] = []
-  let ext_str_values : Array[String] = []
-  let ext_names : Array[String] = []
+  let ext_bool_values : Map[String, Bool] = Map::new()
+  let ext_num_values : Map[String, Int] = Map::new()
+  let ext_str_values : Map[String, String] = Map::new()
   try {
     let magic = try? reader.read_bytes(2)
     let num_bytes_size = match magic {
@@ -130,6 +128,161 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
     if str_table_length % 2 != 0 && reader.remaining() > 0 {
       reader.read_bytes(1) |> ignore
     }
+    // read extensions if available (need at least 10 bytes for extension header)
+    if reader.remaining() >= 10 {
+      let ext_bool_length = reader.read_uint16_le()
+      let ext_num_length = reader.read_uint16_le()
+      let ext_str_length = reader.read_uint16_le()
+      let ext_offset_length = reader.read_uint16_le() // offset table length for names
+      let ext_table_length = reader.read_uint16_le() // string table length
+      
+      // Calculate total extension names count
+      let ext_all_length = ext_bool_length.to_int() + ext_num_length.to_int() + ext_str_length.to_int()
+      
+      // Validate extension sizes (unibilium uses MAX15BITS = 0x7fff)
+      if ext_bool_length <= 0x7fff && ext_num_length <= 0x7fff && 
+         ext_str_length <= 0x7fff && ext_offset_length <= 0x7fff && 
+         ext_table_length <= 0x7fff {
+        
+        // Calculate required bytes for extension section
+        let ext_required_bytes = ext_bool_length.to_int() +
+          (if ext_bool_length % 2 != 0 { 1 } else { 0 }) + // padding
+          ext_num_length.to_int() * num_bytes_size +
+          ext_str_length.to_int() * 2 + // string offsets
+          ext_all_length * 2 + // name offsets  
+          ext_table_length.to_int()
+        
+        if reader.remaining() >= ext_required_bytes.to_int64() {
+          // read extended boolean values (will be paired with names later)
+          let ext_bool_data: Array[Bool] = []
+          if ext_bool_length > 0 {
+            let raw_ext_bool_bytes = reader.read_bytes(ext_bool_length.to_int())
+            for b in raw_ext_bool_bytes {
+              ext_bool_data.push(b != 0)
+            }
+          }
+          
+          // skip padding after extended booleans
+          if ext_bool_length % 2 != 0 {
+            reader.read_bytes(1) |> ignore
+          }
+          
+          // read extended numeric values (will be paired with names later)
+          let ext_num_data: Array[Int] = []
+          if ext_num_length > 0 {
+            for _ in 0..<ext_num_length.to_int() {
+              let num_value = match num_bytes_size {
+                2 => {
+                  let raw_val = reader.read_int16_le().to_int()
+                  if raw_val > 0x7fff { -1 } else { raw_val }
+                }
+                4 => {
+                  let raw_val = reader.read_int_le()
+                  if raw_val > 0x7fffffff { -1 } else { raw_val }
+                }
+                _ =>
+                  raise ParseError::InvalidFormat(
+                    "Invalid numeric bytes size in extensions: " + num_bytes_size.to_string(),
+                  )
+              }
+              ext_num_data.push(num_value)
+            }
+          }
+          
+          // read extended string offsets
+          let ext_str_offsets: Array[Int] = []
+          if ext_str_length > 0 {
+            for _ in 0..<ext_str_length.to_int() {
+              ext_str_offsets.push(reader.read_int16_le().to_int())
+            }
+          }
+          
+          // read extended name offsets  
+          let ext_name_offsets: Array[Int] = []
+          if ext_all_length > 0 {
+            for _ in 0..<ext_all_length {
+              ext_name_offsets.push(reader.read_int16_le().to_int())
+            }
+          }
+          
+          // read the extension string/name table
+          let ext_table = if ext_table_length > 0 {
+            reader.read_bytes(ext_table_length.to_int())
+          } else {
+            Bytes::new(0)
+          }
+          
+          // Calculate where name section starts (after all strings)
+          // Following unibilium's logic: strings are placed first, then names
+          let mut s_sum = 0
+          let ext_str_data: Array[String] = []
+          
+          // First pass: calculate total string space and collect strings
+          for ext_str_offset in ext_str_offsets {
+            if ext_str_offset < 0 || ext_str_offset >= ext_table.length() {
+              ext_str_data.push("")
+            } else {
+              let ext_str_result = try? ReadCString::read_cstring(ext_table, ext_str_offset)
+              match ext_str_result {
+                Ok(ext_str_value) => {
+                  ext_str_data.push(ext_str_value)
+                  s_sum += ext_str_value.length() + 1 // +1 for null terminator
+                }
+                Err(_) => ext_str_data.push("")
+              }
+            }
+          }
+          
+          // collect extended names (from the name section which starts after strings)
+          // Names are located in the second part of the table, starting at s_sum
+          let ext_name_data: Array[String] = []
+          for ext_name_offset in ext_name_offsets {
+            let adjusted_offset = s_sum + ext_name_offset
+            if ext_name_offset < 0 || adjusted_offset >= ext_table.length() {
+              ext_name_data.push("")
+            } else {
+              let ext_name_result = try? ReadCString::read_cstring(ext_table, adjusted_offset)
+              match ext_name_result {
+                Ok(ext_name_value) => ext_name_data.push(ext_name_value)
+                Err(_) => ext_name_data.push("")
+              }
+            }
+          }
+          
+          // Now pair the names with their values and populate the maps
+          // First ext_bool_length names correspond to boolean values
+          for i in 0..<ext_bool_data.length() {
+            if i < ext_name_data.length() {
+              let name = ext_name_data[i]
+              let value = ext_bool_data[i]
+              ext_bool_values[name] = value
+            }
+          }
+          
+          // Next ext_num_length names correspond to numeric values  
+          let num_start = ext_bool_length.to_int()
+          for i in 0..<ext_num_data.length() {
+            let name_idx = num_start + i
+            if name_idx < ext_name_data.length() {
+              let name = ext_name_data[name_idx]
+              let value = ext_num_data[i]
+              ext_num_values[name] = value
+            }
+          }
+          
+          // Finally ext_str_length names correspond to string values
+          let str_start = num_start + ext_num_length.to_int()
+          for i in 0..<ext_str_data.length() {
+            let name_idx = str_start + i
+            if name_idx < ext_name_data.length() {
+              let name = ext_name_data[name_idx]
+              let value = ext_str_data[i]
+              ext_str_values[name] = value
+            }
+          }
+        }
+      }
+    }
   } catch {
     ReadError(e) =>
       raise ParseError::ReadingError(ReadOrSeekError::ReadError(e))
@@ -147,6 +300,5 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
     ext_bool_values,
     ext_num_values,
     ext_str_values,
-    ext_names,
   }
 }
