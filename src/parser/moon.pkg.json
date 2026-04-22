@@ -5,6 +5,7 @@
   ],
   "import": [
     "tonyfettes/encoding",
-    "moonbitlang/core/debug"
+    "moonbitlang/core/debug",
+    "moonbitlang/core/immut/vector"
   ]
 }
