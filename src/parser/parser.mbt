@@ -1,7 +1,6 @@
 ///|
 suberror ReadOrSeekError {
   ReadError(ReadError)
-  SeekError(SeekError)
 } derive(Eq, Debug)
 
 ///|
@@ -301,8 +300,6 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
   } catch {
     ReadError(e) =>
       raise ParseError::ReadingError(ReadOrSeekError::ReadError(e))
-    SeekError(e) =>
-      raise ParseError::ReadingError(ReadOrSeekError::SeekError(e))
     ParseError::InvalidFormat(e) => raise ParseError::InvalidFormat(e)
     _ => raise ParseError::InvalidFormat("Unknown error")
   }
