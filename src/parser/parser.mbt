@@ -58,7 +58,7 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
       let raw_name_bytes = reader.read_bytes(name_length.to_int())
       let raw_name_string = @encoding.decode(raw_name_bytes, encoding=UTF8)
       // remove the last \0
-      let raw_name_string = raw_name_string.trim_end("\u{00}")
+      let raw_name_string = raw_name_string.trim_end(chars="\u{00}"[:])
       let splited_names = raw_name_string.split("|"[:]).collect()
       for i, splited_name in splited_names.iter2() {
         if i == splited_names.length() - 1 {
