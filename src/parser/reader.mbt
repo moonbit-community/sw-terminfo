@@ -5,13 +5,13 @@ priv suberror ReadError {
   EndOfStream
   InvalidFormat(String)
   BufferUnderflow(Int) // expected bytes
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 priv suberror SeekError {
   InvalidPosition(Int64)
   SeekOutOfBounds(Int64, Int64) // position, length
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 // Read trait for reading various data types from binary data
 

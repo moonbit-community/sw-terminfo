@@ -2,13 +2,13 @@
 suberror ReadOrSeekError {
   ReadError(ReadError)
   SeekError(SeekError)
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 suberror ParseError {
   ReadingError(ReadOrSeekError)
   InvalidFormat(String)
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 pub struct Terminal {
@@ -20,7 +20,22 @@ pub struct Terminal {
   ext_bool_values : Map[String, Bool]
   ext_num_values : Map[String, Int]
   ext_str_values : Map[String, String]
-} derive(Eq, Show, ToJson)
+} derive(Eq, Debug, ToJson)
+
+///|
+impl Show for ReadOrSeekError with output(self, logger) {
+  @debug.to_string(self).output(logger)
+}
+
+///|
+impl Show for ParseError with output(self, logger) {
+  @debug.to_string(self).output(logger)
+}
+
+///|
+pub impl Show for Terminal with output(self, logger) {
+  @debug.to_string(self).output(logger)
+}
 
 ///|
 pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
@@ -37,12 +52,12 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
   let ext_num_values : Map[String, Int] = Map::new()
   let ext_str_values : Map[String, String] = Map::new()
   try {
-    let magic = try? reader.read_bytes(2)
+    let magic = reader.read_bytes(2)
     let num_bytes_size = match magic {
       // 16-bit terminfo
-      Ok([0x1A, 0x01]) => 2
+      [0x1A, 0x01] => 2
       // 32-bit terminfo
-      Ok([0x1E, 0x02]) => 4
+      [0x1E, 0x02] => 4
       _ =>
         raise ParseError::InvalidFormat(
           "Invalid terminal magic: " + magic.to_string(),

@@ -4,6 +4,7 @@
     "ShellWen/sw_terminfo/parser/samples"
   ],
   "import": [
-    "tonyfettes/encoding"
+    "tonyfettes/encoding",
+    "moonbitlang/core/debug"
   ]
 }
