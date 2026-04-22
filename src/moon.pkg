@@ -1,0 +1,7 @@
+import {
+} for "test"
+
+options(
+  deps: [ "ShellWen/sw_terminfo/parser" ],
+  "is-main": false,
+)

@@ -54,7 +54,10 @@ fn BytesReader::new(data : Bytes) -> BytesReader {
 // Helper function to read multiple bytes
 
 ///|
-fn BytesReader::read_bytes_helper(self : BytesReader, count : Int) -> BytesView raise ReadError {
+fn BytesReader::read_bytes_helper(
+  self : BytesReader,
+  count : Int,
+) -> BytesView raise ReadError {
   if self.position + count > self.data.length() {
     raise ReadError::BufferUnderflow(count)
   }
@@ -76,6 +79,7 @@ impl Read for BytesReader with read_int_le(self) -> Int raise ReadError {
   b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)
 }
 
+///|
 impl Read for BytesReader with read_int16_le(self) -> Int16 raise ReadError {
   let bytes = self.read_bytes_helper(2)
   // Convert bytes to short (little endian)
@@ -84,6 +88,7 @@ impl Read for BytesReader with read_int16_le(self) -> Int16 raise ReadError {
   b0 | (b1 << 8)
 }
 
+///|
 impl Read for BytesReader with read_uint16_le(self) -> UInt16 raise ReadError {
   let bytes = self.read_bytes_helper(2)
   // Convert bytes to unsigned short (little endian)
@@ -92,6 +97,7 @@ impl Read for BytesReader with read_uint16_le(self) -> UInt16 raise ReadError {
   b0 | (b1 << 8)
 }
 
+///|
 impl Read for BytesReader with read_bytes(self, length : Int) -> Bytes raise ReadError {
   if length < 0 {
     raise ReadError::InvalidFormat("Negative length not allowed")

@@ -45,7 +45,7 @@ pub enum BooleanAbility {
   HasHardwareTabs
   ReturnDoesClrEol
   // Tip: edit this enum need to update all_boolean_abilities array too
-} derive(Eq, Debug, ToJson(style="flat"))
+} derive(Eq, Debug, ToJson)
 
 ///|
 pub impl Show for BooleanAbility with output(self, logger) {
@@ -143,7 +143,7 @@ pub enum NumericAbility {
   HorizontalTabDelay(Int)
   NumberOfFunctionKeys(Int)
   // Tip: edit this enum need to update all_numeric_abilities array too
-} derive(Eq, Debug, ToJson(style="flat"))
+} derive(Eq, Debug, ToJson)
 
 ///|
 pub impl Show for NumericAbility with output(self, logger) {
@@ -611,7 +611,7 @@ pub enum StringAbility {
   MemoryUnlock(String)
   BoxChars1(String)
   // Tip: edit this enum need to update all_string_abilities array too
-} derive(Eq, Debug, ToJson(style="flat"))
+} derive(Eq, Debug, ToJson)
 
 ///|
 pub impl Show for StringAbility with output(self, logger) {

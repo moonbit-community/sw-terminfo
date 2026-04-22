@@ -1,0 +1,14 @@
+import {
+  "tonyfettes/encoding",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/immut/vector",
+}
+
+import {
+  "ShellWen/sw_terminfo/parser/samples",
+  "moonbitlang/core/test",
+} for "test"
+
+options(
+  "is-main": false,
+)
