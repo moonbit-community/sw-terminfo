@@ -49,7 +49,7 @@ pub enum BooleanAbility {
 
 ///|
 pub impl Show for BooleanAbility with output(self, logger) {
-  @debug.to_string(self).output(logger)
+  logger.write_string(@debug.to_string(self))
 }
 
 ///|
@@ -147,7 +147,7 @@ pub enum NumericAbility {
 
 ///|
 pub impl Show for NumericAbility with output(self, logger) {
-  @debug.to_string(self).output(logger)
+  logger.write_string(@debug.to_string(self))
 }
 
 ///|
@@ -615,7 +615,7 @@ pub enum StringAbility {
 
 ///|
 pub impl Show for StringAbility with output(self, logger) {
-  @debug.to_string(self).output(logger)
+  logger.write_string(@debug.to_string(self))
 }
 
 ///|

@@ -23,17 +23,17 @@ pub struct Terminal {
 
 ///|
 impl Show for ReadOrSeekError with output(self, logger) {
-  @debug.to_string(self).output(logger)
+  logger.write_string(@debug.to_string(self))
 }
 
 ///|
 impl Show for ParseError with output(self, logger) {
-  @debug.to_string(self).output(logger)
+  logger.write_string(@debug.to_string(self))
 }
 
 ///|
 pub impl Show for Terminal with output(self, logger) {
-  @debug.to_string(self).output(logger)
+  logger.write_string(@debug.to_string(self))
 }
 
 ///|
