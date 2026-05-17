@@ -47,9 +47,9 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
   let bool_values : Array[BooleanAbility] = []
   let num_values : Array[NumericAbility] = []
   let str_values : Array[StringAbility] = []
-  let ext_bool_values : Map[String, Bool] = Map::new()
-  let ext_num_values : Map[String, Int] = Map::new()
-  let ext_str_values : Map[String, String] = Map::new()
+  let ext_bool_values : Map[String, Bool] = Map([])
+  let ext_num_values : Map[String, Int] = Map([])
+  let ext_str_values : Map[String, String] = Map([])
   try {
     let magic = reader.read_bytes(2)
     let num_bytes_size = match magic {
@@ -76,9 +76,9 @@ pub fn Terminal::from_bytes(bytes : Bytes) -> Terminal raise ParseError {
       let splited_names = raw_name_string.split("|"[:]).collect()
       for i, splited_name in splited_names.iter2() {
         if i == splited_names.length() - 1 {
-          name = splited_name.to_string()
+          name = splited_name.to_owned()
         } else {
-          aliases.push(splited_name.to_string())
+          aliases.push(splited_name.to_owned())
         }
       }
     }

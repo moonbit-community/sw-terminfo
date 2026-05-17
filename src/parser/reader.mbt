@@ -105,7 +105,7 @@ impl Read for BytesReader with read_bytes(self, length : Int) -> Bytes raise Rea
   if self.position + length > self.data.length() {
     raise ReadError::BufferUnderflow(length)
   }
-  let retval = self.data[self.position:self.position + length].to_bytes()
+  let retval = self.data[self.position:self.position + length].to_owned()
   self.position += length
   retval
 }
